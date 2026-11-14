@@ -28,7 +28,8 @@ class GymMemberManager(DbConnect):
 
     def post(self,**kwargs):
         try:
-            self.cursor=super().get_connection()
+            self.connection = super().get_connection()
+            self.cursor = self.connection.cursor()
             query="insert into member(name,place,mobile,plan,fee,joined_date) values(%s,%s,%s,%s,%s,%s)"
             values=[v for v in kwargs.values()]
             self.cursor.execute(query,values)
@@ -39,7 +40,8 @@ class GymMemberManager(DbConnect):
 
     def get(self):
         try:
-            self.cursor=super().get_connection()
+            super().get_connection()
+            self.cursor = self.connection.cursor()
             query="select * from member"
             self.cursor.execute(query)
             records=self.cursor.fetchall()
@@ -55,7 +57,38 @@ class GymMemberManager(DbConnect):
             print(record)
         except Exception as e:
             print(e)
-                
+    def delete(self,id=None):
+        try:
+            record=self.get_object(id=id)
+            if record!=None:
+                query="delete from member where id=%s"
+                self.cursor.execute(query,(id,))
+                self.connection.commit()
+                print("Member deleted Successfully..!")
+            else:
+                print("No member found..!")
+        except Exception as e:
+            print(e)
+    
+    def put(self,id=None,**kwargs):
+        try:
+            record=self.get_object(id=id)
+            if record!=None:
+                self.cursor=self.connection.cursor()
+                placeholder= ""
+                for k in kwargs.keys():
+                    placeholder += k + "=%s, "
+                placeholder = placeholder.rstrip(", ")
+                query=f"update member set {placeholder} where id=%s"
+                values=[v for v in kwargs.values()]
+                values.append(id)
+                self.cursor.execute(query,values)
+                self.connection.commit()
+                return True, "Member Updated Successfully..!"
+            else:
+                return False, "No member found..!"
+        except Exception as e:
+            print(e)           
 
 
             
@@ -66,10 +99,13 @@ member_instance=GymMemberManager()
 member_instance.post(
     name="Rohan",
     place="Trivandrum",
-    mobile="9001455831",
+    mobile="9021455802",
     plan="3 months",
     fee=1000,
     joined_date=datetime.now().strftime('%Y-%m-%d')
 )
 member_instance.get()   
-member_instance.retrieve(id=2)       
+# member_instance.retrieve(id=2)  
+# member_instance.delete(id=1)
+# member_instance.put(id)    
+

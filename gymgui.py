@@ -17,17 +17,18 @@ with tab1:
         member_instance.post(name=name,place=place,mobile=mobile,plan=plan,fee=fee,joined_date=joined_date)
         st.success("Member Added Successfully..!")
 with tab2:
-    st.header("View Gym Member Details..!")
-    records=member_instance.get()
-    print("______________")
-    print(records)
-    if records:
+    st.header("View Gym Member Details")
+    records = member_instance.get()
+
+    if records is None:
+        st.error("Could not load members. Check the terminal for the error.")
+    elif records:
         st.table(records)
     else:
-        st.warning("No member found..!")
+        st.info("No members found.")
 with tab3:
     st.title("Update Member Details")
-    record=member_instance.get()
+    records=member_instance.get()
     if records:
         member_ids=[r[0] for r in records]
         id=st.selectbox("Select Member id",member_ids,key="update_id")
@@ -36,18 +37,21 @@ with tab3:
         place=st.text_input("Enter your place",value=record[2])
         mobile=st.text_input("Enter mobile number",value=record[3])
         plan=st.selectbox("Select your plan",plans,index=plans.index(record[4]))
-        joined_date=st.date_input("Enter joined date",value=record[5])
-    if st.button("Update"):
-        status,message=member_instance.put(id=id,
-                                           name=name,
-                                           place=place,
-                                           mobile=mobile,
-                                           plan=plan,
-                                           joined_date=joined_date)
-        if status:
-            st.success(message)
-            st.rerun()
+        joined_date = st.date_input("Enter joined date",
+                                    value=record[6],
+                                    key=f"joined_date_{record[0]}"
+                                )
+        if st.button("Update"):
+            status,message=member_instance.put(id=id,
+                                               name=name,
+                                               place=place,
+                                               mobile=mobile,
+                                               plan=plan,
+                                               joined_date=joined_date)
+
+            if status:
+                st.success(message)          
+            else:
+                st.error(message)
         else:
-            st.error(message)
-    else:
-        st.warning("No member found..!")
+            st.warning("No member found..!")
